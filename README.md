@@ -1,4 +1,16 @@
-# hostel-complaint-system
-A web-based complaint management system for hostels with structured tracking and user-friendly interface.
+# Hostel Complaint Management System
+
+A web-based system to manage hostel complaints with structured workflow and clean UI.
+
+## Features
+- Complaint submission
+- Structured tracking system
+- User-friendly interface
+
+## Tech Stack
+- HTML
+- CSS
+- JavaScript
+
 ## Live Demo
-[hostel-fix.netlify.app](https://hostel-fix.netlify.app)
+[View Project](https://hostel-fix.netlify.app)
