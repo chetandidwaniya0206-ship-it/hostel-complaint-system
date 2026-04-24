@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HostelFix — Hostel Complaint Management System</title>
+<style>
+/* =================== CSS RESET & VARIABLES =================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --primary: #4f46e5;
+  --primary-light: #818cf8;
+  --primary-dark: #3730a3;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --text: #1e293b;
+  --text-light: #64748b;
+  --border: #e2e8f0;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+button { cursor: pointer; font-family: inherit; }
+input, textarea, select { font-family: inherit; }
+
+/* =================== LOGIN PAGE =================== */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+.login-card {
+  background: white;
+  border-radius: 20px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+  animation: slideUp 0.5s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.login-card h1 { font-size: 28px; text-align: center; margin-bottom: 6px; color: var(--primary-dark); }
+.login-card .subtitle { text-align: center; color: var(--text-light); margin-bottom: 32px; font-size: 14px; }
+.login-card .logo { text-align: center; font-size: 48px; margin-bottom: 16px; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: var(--text); }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  transition: border-color 0.2s;
+  outline: none;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  border-color: var(--primary);
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { background: #059669; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover { background: #dc2626; }
+.btn-warning { background: var(--warning); color: white; }
+.btn-warning:hover { background: #d97706; }
+.btn-info { background: var(--info); color: white; }
+.btn-info:hover { background: #2563eb; }
+.btn-ghost { background: transparent; color: var(--text-light); border: 2px solid var(--border); }
+.btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
+.btn-sm { padding: 8px 16px; font-size: 13px; }
+.btn-full { width: 100%; justify-content: center; }
+.login-card .demo-info {
+  margin-top: 24px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-light);
+  line-height: 1.6;
+}
+.login-card .demo-info strong { color: var(--text); }
+
+/* =================== MAIN LAYOUT =================== */
+.app { display: none; min-height: 100vh; }
+.app.active { display: flex; flex-direction: column; }
+header {
+  background: white;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+header .brand { font-size: 22px; font-weight: 800; color: var(--primary-dark); display: flex; align-items: center; gap: 10px; }
+header .brand span { font-size: 26px; }
+header .header-right { display: flex; align-items: center; gap: 16px; }
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  background: #f1f5f9;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.user-badge .avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+.role-tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.role-student { background: #dbeafe; color: #1d4ed8; }
+.role-admin { background: #fce7f3; color: #be185d; }
+.role-staff { background: #d1fae5; color: #065f46; }
+
+/* Notification Bell */
+.notif-wrapper { position: relative; }
+.notif-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  position: relative;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+.notif-btn:hover { background: #f1f5f9; }
+.notif-badge {
+  position: absolute;
+  top: 2px; right: 2px;
+  background: var(--danger);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+.notif-badge.hidden { display: none; }
+.notif-dropdown {
+  display: none;
+  position: absolute;
+  top: 48px;
+  right: 0;
+  width: 340px;
+  max-height: 400px;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  overflow-y: auto;
+  z-index: 200;
+}
+.notif-dropdown.show { display: block; }
+.notif-dropdown .notif-header { padding: 14px 16px; font-weight: 700; border-bottom: 1px solid var(--border); font-size: 14px; }
+.notif-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  line-height: 1.5;
+  transition: background 0.15s;
+}
+.notif-item:hover { background: #f8fafc; }
+.notif-item.unread { background: #eff6ff; border-left: 3px solid var(--primary); }
+.notif-item .notif-time { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+.notif-empty { padding: 32px; text-align: center; color: var(--text-light); font-size: 14px; }
+
+/* Tabs */
+.tab-bar {
+  display: flex;
+  background: white;
+  border-bottom: 2px solid var(--border);
+  padding: 0 24px;
+  gap: 4px;
+  overflow-x: auto;
+}
+.tab-btn {
+  padding: 14px 20px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-light);
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--primary); }
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* Main Content */
+.main-content { flex: 1; padding: 24px; max-width: 1200px; width: 100%; margin: 0 auto; }
+.tab-panel { display: none; animation: fadeIn 0.3s ease; }
+.tab-panel.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* =================== STATS CARDS =================== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.2s;
+}
+.stat-card:hover { transform: translateY(-2px); }
+.stat-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+.stat-icon.blue { background: #dbeafe; }
+.stat-icon.yellow { background: #fef3c7; }
+.stat-icon.green { background: #d1fae5; }
+.stat-icon.red { background: #fee2e2; }
+.stat-icon.purple { background: #ede9fe; }
+.stat-info h3 { font-size: 28px; font-weight: 800; line-height: 1; }
+.stat-info p { font-size: 13px; color: var(--text-light); margin-top: 4px; }
+
+/* =================== COMPLAINT CARDS =================== */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.section-header h2 { font-size: 20px; }
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.filters input, .filters select {
+  padding: 8px 14px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  outline: none;
+}
+.filters input:focus, .filters select:focus { border-color: var(--primary); }
+.complaint-list { display: flex; flex-direction: column; gap: 12px; }
+.complaint-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.complaint-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+.complaint-card.priority-high { border-left-color: var(--danger); }
+.complaint-card.priority-medium { border-left-color: var(--warning); }
+.complaint-card.priority-low { border-left-color: var(--success); }
+.complaint-card .cc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+.complaint-card h3 { font-size: 16px; flex: 1; }
+.complaint-card .cc-id { font-size: 12px; color: var(--text-light); font-weight: 600; font-family: monospace; }
+.complaint-card .cc-desc { font-size: 14px; color: var(--text-light); line-height: 1.5; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.complaint-card .cc-meta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font-size: 12px; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.badge-pending { background: #fef3c7; color: #92400e; }
+.badge-in-progress { background: #dbeafe; color: #1e40af; }
+.badge-resolved { background: #d1fae5; color: #065f46; }
+.badge-rejected { background: #fee2e2; color: #991b1b; }
+.badge-category { background: #f1f5f9; color: var(--text); }
+.badge-priority-high { background: #fee2e2; color: #991b1b; }
+.badge-priority-medium { background: #fef3c7; color: #92400e; }
+.badge-priority-low { background: #d1fae5; color: #065f46; }
+.upvote-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.upvote-btn:hover, .upvote-btn.active { background: #eff6ff; border-color: var(--primary); color: var(--primary); }
+
+/* =================== MODAL =================== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: white;
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+  animation: slideUp 0.3s ease;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.modal-header h2 { font-size: 18px; }
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-light);
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.modal-close:hover { background: #fee2e2; color: var(--danger); }
+.modal-body { padding: 24px; }
+
+/* =================== COMPLAINT DETAIL =================== */
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+.detail-item { font-size: 14px; }
+.detail-item .label { font-size: 12px; color: var(--text-light); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.detail-desc { font-size: 14px; line-height: 1.7; color: var(--text); margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: var(--radius-sm); }
+
+/* Timeline */
+.timeline { margin: 20px 0; padding-left: 24px; border-left: 3px solid var(--border); }
+.timeline-item { position: relative; padding: 0 0 20px 20px; }
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -30px;
+  top: 4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid white;
+  box-shadow: 0 0 0 2px var(--primary);
+}
+.timeline-item .tl-text { font-size: 14px; font-weight: 600; }
+.timeline-item .tl-time { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+
+/* Chat */
+.chat-section { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px; }
+.chat-section h3 { font-size: 16px; margin-bottom: 12px; }
+.chat-messages { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; padding: 12px; background: #f8fafc; border-radius: var(--radius-sm); }
+.chat-msg { font-size: 13px; line-height: 1.5; padding: 10px 14px; border-radius: 12px; max-width: 80%; }
+.chat-msg.self { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+.chat-msg.other { background: white; border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 4px; }
+.chat-msg .msg-author { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; opacity: 0.8; }
+.chat-msg .msg-time { font-size: 10px; opacity: 0.6; margin-top: 4px; text-align: right; }
+.chat-input-row { display: flex; gap: 8px; }
+.chat-input-row input { flex: 1; padding: 10px 14px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; outline: none; }
+.chat-input-row input:focus { border-color: var(--primary); }
+
+/* Admin Actions */
+.admin-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); align-items: center; }
+.admin-actions select { padding: 8px 12px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; outline: none; }
+
+/* Rating */
+.rating-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+.stars { display: flex; gap: 4px; margin-top: 8px; }
+.stars span { font-size: 28px; cursor: pointer; transition: transform 0.15s; }
+.stars span:hover { transform: scale(1.2); }
+
+/* =================== ANALYTICS =================== */
+.analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.chart-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+.chart-card h3 { font-size: 16px; margin-bottom: 16px; }
+.bar-chart { display: flex; flex-direction: column; gap: 10px; }
+.bar-row { display: flex; align-items: center; gap: 12px; }
+.bar-label { font-size: 13px; min-width: 90px; font-weight: 500; }
+.bar-track { flex: 1; height: 24px; background: #f1f5f9; border-radius: 12px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 12px; transition: width 0.6s ease; display: flex; align-items: center; padding-left: 10px; font-size: 11px; font-weight: 700; color: white; min-width: fit-content; }
+.bar-fill.blue { background: var(--info); }
+.bar-fill.green { background: var(--success); }
+.bar-fill.yellow { background: var(--warning); }
+.bar-fill.red { background: var(--danger); }
+.bar-fill.purple { background: #8b5cf6; }
+.bar-fill.pink { background: #ec4899; }
+.bar-fill.indigo { background: var(--primary); }
+.bar-count { font-size: 13px; font-weight: 700; min-width: 30px; text-align: right; }
+.metric-big { text-align: center; padding: 20px; }
+.metric-big .number { font-size: 52px; font-weight: 800; color: var(--primary); }
+.metric-big .label { font-size: 14px; color: var(--text-light); margin-top: 4px; }
+.trending-list { display: flex; flex-direction: column; gap: 10px; }
+.trending-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: #f8fafc; border-radius: var(--radius-sm); }
+.trending-rank { font-size: 18px; font-weight: 800; color: var(--primary); min-width: 30px; text-align: center; }
+.trending-info { flex: 1; font-size: 13px; }
+.trending-info strong { display: block; }
+.trending-votes { font-size: 14px; font-weight: 700; color: var(--warning); }
+
+/* =================== NEW COMPLAINT FORM =================== */
+.new-complaint-form .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.new-complaint-form textarea { min-height: 100px; resize: vertical; }
+
+/* =================== TOAST =================== */
+.toast-container { position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  padding: 14px 20px;
+  background: var(--text);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  animation: slideInRight 0.3s ease;
+  max-width: 360px;
+}
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+.toast.info { background: var(--info); }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+
+/* =================== RESPONSIVE =================== */
+@media (max-width: 768px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .analytics-grid { grid-template-columns: 1fr; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .new-complaint-form .form-row { grid-template-columns: 1fr; }
+  .filters { flex-direction: column; width: 100%; }
+  .filters input, .filters select { width: 100%; }
+  .main-content { padding: 16px; }
+  header { padding: 0 16px; }
+  .tab-bar { padding: 0 16px; }
+  .notif-dropdown { width: 300px; right: -60px; }
+  .modal { margin: 10px; }
+}
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .login-card { padding: 32px 24px; }
+  .user-badge .uname { display: none; }
+}
+
+/* Empty State */
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-light); }
+.empty-state .empty-icon { font-size: 56px; margin-bottom: 12px; }
+.empty-state h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+.empty-state p { font-size: 14px; }
+</style>
+</head>
+<body>
+
+<!-- =================== LOGIN PAGE =================== -->
+<div class="login-page" id="loginPage">
+  <div class="login-card">
+    <div class="logo">🏠</div>
+    <h1>HostelFix</h1>
+    <p class="subtitle">Hostel Complaint Management System</p>
+    <p style="text-align:center; color:#64748b; font-size:13px; font-weight:600; margin-bottom:10px;">
+  CREATED BY CHETAN DIDWANIYA (CSE-DS) - PIET, JAIPUR
+</p>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="Enter username" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+    <div style="position:relative;">
+  <input type="password" id="loginPass" placeholder="Enter password" style="padding-right:40px;">
+  <span onclick="togglePassword()" 
+        style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer;">
+    👁️
+  </span>
+</div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()">Sign In →</button>
+    <div class="demo-info">
+      <strong>Demo Credentials:</strong><br>
+      👨‍🎓 Student: <code>student</code> / <code>pass123</code><br>
+      👨‍💼 Admin: <code>admin</code> / <code>admin123</code><br>
+      🔧 Staff: <code>staff</code> / <code>staff123</code>
+    </div>
+  </div>
+</div>
+
+<!-- =================== MAIN APP =================== -->
+<div class="app" id="mainApp">
+  <header>
+    <div class="brand"><span>🏠</span> HostelFix</div>
+    <div class="header-right">
+      <div class="notif-wrapper">
+        <button class="notif-btn" onclick="toggleNotif()">🔔<span class="notif-badge hidden" id="notifBadge">0</span></button>
+        <div class="notif-dropdown" id="notifDropdown">
+          <div class="notif-header">Notifications</div>
+          <div id="notifList"></div>
+        </div>
+      </div>
+      <div class="user-badge">
+        <div class="avatar" id="userAvatar">S</div>
+        <span class="uname" id="userName">Student</span>
+        <span class="role-tag" id="userRole">student</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="tab-bar" id="tabBar"></div>
+
+  <div class="main-content">
+    <!-- Dashboard Tab -->
+    <div class="tab-panel" id="panel-dashboard">
+      <div class="stats-grid" id="statsGrid"></div>
+      <div class="section-header">
+        <h2>📋 Recent Complaints</h2>
+      </div>
+      <div class="complaint-list" id="dashboardList"></div>
+    </div>
+
+    <!-- My/All Complaints Tab -->
+    <div class="tab-panel" id="panel-complaints">
+      <div class="section-header">
+        <h2 id="complaintsTitle">My Complaints</h2>
+        <div class="filters">
+          <input type="text" id="searchInput" placeholder="🔍 Search complaints..." oninput="renderComplaints()">
+          <select id="filterStatus" onchange="renderComplaints()">
+            <option value="">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="in-progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <select id="filterCategory" onchange="renderComplaints()">
+            <option value="">All Categories</option>
+            <option value="cleaning">Cleaning</option>
+            <option value="electrical">Electrical</option>
+            <option value="plumbing">Plumbing</option>
+            <option value="wifi">WiFi</option>
+            <option value="food">Food</option>
+            <option value="other">Other</option>
+          </select>
+          <select id="filterPriority" onchange="renderComplaints()">
+            <option value="">All Priority</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+      </div>
+      <div class="complaint-list" id="complaintsList"></div>
+    </div>
+
+    <!-- New Complaint Tab (Student) -->
+    <div class="tab-panel" id="panel-new">
+      <div style="max-width:600px; margin:0 auto;">
+        <h2 style="margin-bottom:20px;">📝 File a New Complaint</h2>
+        <div class="new-complaint-form">
+          <div class="form-group">
+            <label>Complaint Title</label>
+            <input type="text" id="ncTitle" placeholder="e.g. Broken ceiling fan in Room 204">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Category</label>
+              <select id="ncCategory">
+                <option value="cleaning">🧹 Cleaning</option>
+                <option value="electrical">⚡ Electrical</option>
+                <option value="plumbing">🚿 Plumbing</option>
+                <option value="wifi">📶 WiFi</option>
+                <option value="food">🍽️ Food</option>
+                <option value="other">📦 Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Priority</label>
+              <select id="ncPriority">
+                <option value="medium">🟡 Medium</option>
+                <option value="high">🔴 High</option>
+                <option value="low">🟢 Low</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Room Number</label>
+              <input type="text" id="ncRoom" placeholder="e.g. 204">
+            </div>
+            <div class="form-group">
+              <label>Block</label>
+              <select id="ncBlock">
+                <option value="A">Block A</option>
+                <option value="B">Block B</option>
+                <option value="C">Block C</option>
+                <option value="D">Block D</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="ncDesc" placeholder="Describe the issue in detail..."></textarea>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="submitComplaint()">🚀 Submit Complaint</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Tab (Admin) -->
+    <div class="tab-panel" id="panel-analytics">
+      <h2 style="margin-bottom:20px;">📊 Analytics Dashboard</h2>
+      <div class="analytics-grid" id="analyticsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== DETAIL MODAL =================== -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Complaint Detail</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+  function togglePassword() {
+  const pass = document.getElementById('loginPass');
+  pass.type = pass.type === 'password' ? 'text' : 'password';
+}
+// =================== DATA LAYER ===================
+const USERS = {
+  student: { password: 'pass123', role: 'student', name: 'Ravi Kumar', room: '204', block: 'A' },
+  admin: { password: 'admin123', role: 'admin', name: 'Dr. Sharma', room: '-', block: '-' },
+  staff: { password: 'staff123', role: 'staff', name: 'Ramesh Yadav', room: '-', block: '-' }
+};
+
+const CATEGORIES = {
+  cleaning: { icon: '🧹', label: 'Cleaning', color: 'green' },
+  electrical: { icon: '⚡', label: 'Electrical', color: 'yellow' },
+  plumbing: { icon: '🚿', label: 'Plumbing', color: 'blue' },
+  wifi: { icon: '📶', label: 'WiFi', color: 'purple' },
+  food: { icon: '🍽️', label: 'Food', color: 'red' },
+  other: { icon: '📦', label: 'Other', color: 'indigo' }
+};
+
+let currentUser = null;
+let complaints = [];
+let notifications = [];
+let complaintIdCounter = 1000;
+
+function initSampleData() {
+  const now = Date.now();
+  complaints = [
+    {
+      id: 'HC-1001', title: 'Broken ceiling fan in Room 204',
+      description: 'The ceiling fan in room 204 has stopped working completely since yesterday. It makes a grinding noise when switched on but the blades do not rotate. This is causing difficulty in sleeping due to heat.',
+      category: 'electrical', priority: 'high', status: 'in-progress',
+      room: '204', block: 'A', submittedBy: 'student', assignedTo: 'staff',
+      upvotes: 5, upvotedBy: ['student'],
+      rating: 0,
+      timeline: [
+        { status: 'Submitted', time: now - 86400000 * 3, by: 'student' },
+        { status: 'In Progress', time: now - 86400000 * 2, by: 'admin' },
+        { status: 'Assigned to Ramesh Yadav', time: now - 86400000 * 2, by: 'admin' }
+      ],
+      messages: [
+        { from: 'student', role: 'student', name: 'Ravi Kumar', text: 'Please fix this urgently, its very hot.', time: now - 86400000 * 2 },
+        { from: 'staff', role: 'staff', name: 'Ramesh Yadav', text: 'I will come check it tomorrow morning.', time: now - 86400000 * 1 }
+      ],
+      createdAt: now - 86400000 * 3
+    },
+    {
+      id: 'HC-1002', title: 'WiFi not working in Block B',
+      description: 'The WiFi connection in Block B has been down for the past 2 days. Students are unable to attend online classes and submit assignments. Multiple students are affected.',
+      category: 'wifi', priority: 'high', status: 'pending',
+      room: '301', block: 'B', submittedBy: 'student', assignedTo: null,
+      upvotes: 12, upvotedBy: ['student'],
+      rating: 0,
+      timeline: [
+        { status: 'Submitted', time: now - 86400000 * 1, by: 'student' }
+      ],
+      messages: [],
+      createdAt: now - 86400000 * 1
+    },
+    {
+      id: 'HC-1003', title: 'Bathroom tap leaking in Room 105',
+      description: 'The bathroom tap in room 105 has been continuously leaking for the past week. Water is being wasted and the floor remains wet which is a slip hazard.',
+      category: 'plumbing', priority: 'medium', status: 'resolved',
+      room: '105', block: 'A', submittedBy: 'student', assignedTo: 'staff',
+      upvotes: 3, upvotedBy: [],
+      rating: 4,
+      timeline: [
+        { status: 'Submitted', time: now - 86400000 * 7, by: 'student' },
+        { status: 'In Progress', time: now - 86400000 * 5, by: 'admin' },
+        { status: 'Resolved', time: now - 86400000 * 3, by: 'staff' }
+      ],
+      messages: [
+        { from: 'staff', role: 'staff', name: 'Ramesh Yadav', text: 'Fixed the washer and replaced the tap.', time: now - 86400000 * 3 }
+      ],
+      createdAt: now - 86400000 * 7
+    },
+    {
+      id: 'HC-1004', title: 'Mess food quality deteriorated',
+      description: 'The quality of food served in the mess has gone down significantly. Rice is undercooked, dal is watery, and vegetables taste stale. Multiple students have stomach issues.',
+      category: 'food', priority: 'high', status: 'pending',
+      room: '-', block: 'A', submittedBy: 'student', assignedTo: null,
+      upvotes: 18, upvotedBy: ['student'],
+      rating: 0,
+      timeline: [
+        { status: 'Submitted', time: now - 86400000 * 2, by: 'student' }
+      ],
+      messages: [],
+      createdAt: now - 86400000 * 2
+    },
+    {
+      id: 'HC-1005', title: 'Corridor lights not working in Block C',
+      description: 'The corridor lights on the 2nd floor of Block C have been off for 3 days. It is very dark at night and students are finding it difficult to navigate safely.',
+      category: 'electrical', priority: 'medium', status: 'in-progress',
+      room: '-', block: 'C', submittedBy: 'student', assignedTo: 'staff',
+      upvotes: 7, upvotedBy: [],
+      rating: 0,
+      timeline: [
+        { status: 'Submitted', time: now - 86400000 * 4, by: 'student' },
+        { status: 'In Progress', time: now - 86400000 * 2, by: 'admin' }
+      ],
+      messages: [],
+      createdAt: now - 86400000 * 4
+    },
+    {
+      id: 'HC-1006', title: 'Room 302 not cleaned for 3 days',
+      description: 'Room 302 in Block B has not been cleaned for the past 3 days. Dustbins are overflowing and the floor is very dirty. The cleaning staff has not visited.',
+      category: 'cleaning', priority: 'medium', status: 'pending',
+      room: '302', block: 'B', submittedBy: 'student', assignedTo: null,
+      upvotes: 2, upvotedBy: [],
+      rating: 0,
+      timeline: [
+        { status: 'Submitted', time: now - 86400000 * 1, by: 'student' }
+      ],
+      messages: [],
+      createdAt: now - 86400000 * 1
+    },
+    {
+      id: 'HC-1007', title: 'Water heater not working in Block D',
+      description: 'The common water heater on floor 3 of Block D is not functioning. Students have to use cold water for bathing in winter. Needs urgent repair.',
+      category: 'plumbing', priority: 'high', status: 'rejected',
+      room: '-', block: 'D', submittedBy: 'student', assignedTo: null,
+      upvotes: 1, upvotedBy: [],
+      rating: 0,
+      timeline: [
+        { status: 'Submitted', time: now - 86400000 * 10, by: 'student' },
+        { status: 'Rejected - Duplicate complaint. Already being addressed.', time: now - 86400000 * 9, by: 'admin' }
+      ],
+      messages: [
+        { from: 'admin', role: 'admin', name: 'Dr. Sharma', text: 'This is a duplicate of HC-0998. Already assigned to maintenance.', time: now - 86400000 * 9 }
+      ],
+      createdAt: now - 86400000 * 10
+    }
+  ];
+  complaintIdCounter = 1008;
+
+  notifications = [
+    { text: '🔴 New high-priority complaint: "Mess food quality deteriorated"', time: Date.now() - 86400000 * 2, forUser: 'admin', read: false },
+    { text: '🔧 Your complaint "Broken ceiling fan" has been assigned to Ramesh Yadav', time: Date.now() - 86400000 * 2, forUser: 'student', read: false },
+    { text: '✅ Complaint "Bathroom tap leaking" has been resolved', time: Date.now() - 86400000 * 3, forUser: 'student', read: true },
+    { text: '📋 You have been assigned: "Broken ceiling fan in Room 204"', time: Date.now() - 86400000 * 2, forUser: 'staff', read: false },
+    { text: '📋 You have been assigned: "Corridor lights not working in Block C"', time: Date.now() - 86400000 * 2, forUser: 'staff', read: false }
+  ];
+}
+
+// =================== AUTH ===================
+function doLogin() {
+  const user = document.getElementById('loginUser').value.trim().toLowerCase();
+  const pass = document.getElementById('loginPass').value;
+  if (!USERS[user] || USERS[user].password !== pass) {
+    showToast('Invalid credentials!', 'error');
+    return;
+  }
+  currentUser = { username: user, ...USERS[user] };
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('mainApp').classList.add('active');
+  setupApp();
+}
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('mainApp').classList.remove('active');
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+// Enter key on login
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('loginPage').style.display !== 'none') {
+    doLogin();
+  }
+});
+
+// =================== APP SETUP ===================
+function setupApp() {
+  // User info
+  document.getElementById('userAvatar').textContent = currentUser.name.charAt(0);
+  document.getElementById('userName').textContent = currentUser.name;
+  const roleTag = document.getElementById('userRole');
+  roleTag.textContent = currentUser.role;
+  roleTag.className = 'role-tag role-' + currentUser.role;
+
+  // Tabs
+  const tabs = [];
+  tabs.push({ id: 'dashboard', label: '📊 Dashboard' });
+  tabs.push({ id: 'complaints', label: currentUser.role === 'student' ? '📋 My Complaints' : (currentUser.role === 'staff' ? '📋 Assigned to Me' : '📋 All Complaints') });
+  if (currentUser.role === 'student') tabs.push({ id: 'new', label: '📝 New Complaint' });
+  if (currentUser.role === 'admin') tabs.push({ id: 'analytics', label: '📈 Analytics' });
+
+  const tabBar = document.getElementById('tabBar');
+  tabBar.innerHTML = tabs.map(t => `<button class="tab-btn" data-tab="${t.id}" onclick="switchTab('${t.id}')">${t.label}</button>`).join('');
+
+  document.getElementById('complaintsTitle').textContent = currentUser.role === 'student' ? 'My Complaints' : (currentUser.role === 'staff' ? 'Assigned to Me' : 'All Complaints');
+
+  switchTab('dashboard');
+  updateNotifUI();
+}
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + id));
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'complaints') renderComplaints();
+  if (id === 'analytics') renderAnalytics();
+}
+
+// =================== DASHBOARD ===================
+function renderDashboard() {
+  const all = getVisibleComplaints(true);
+  const pending = all.filter(c => c.status === 'pending').length;
+  const inProgress = all.filter(c => c.status === 'in-progress').length;
+  const resolved = all.filter(c => c.status === 'resolved').length;
+  const highActive = all.filter(c => c.priority === 'high' && (c.status === 'pending' || c.status === 'in-progress')).length;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-icon blue">📋</div><div class="stat-info"><h3>${all.length}</h3><p>Total Complaints</p></div></div>
+    <div class="stat-card"><div class="stat-icon yellow">⏳</div><div class="stat-info"><h3>${pending}</h3><p>Pending</p></div></div>
+    <div class="stat-card"><div class="stat-icon blue">🔧</div><div class="stat-info"><h3>${inProgress}</h3><p>In Progress</p></div></div>
+    <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info"><h3>${resolved}</h3><p>Resolved</p></div></div>
+    <div class="stat-card"><div class="stat-icon red">🔴</div><div class="stat-info"><h3>${highActive}</h3><p>High Priority Active</p></div></div>
+  `;
+
+  // Recent 5
+  const recent = [...all].sort((a, b) => b.createdAt - a.createdAt).slice(0, 5);
+  document.getElementById('dashboardList').innerHTML = recent.length ? recent.map(renderComplaintCard).join('') : emptyState('No complaints yet');
+}
+
+// =================== COMPLAINTS LIST ===================
+function getVisibleComplaints(all) {
+  if (all && currentUser.role === 'admin') return complaints;
+  if (currentUser.role === 'student') return complaints.filter(c => c.submittedBy === currentUser.username);
+  if (currentUser.role === 'staff') return complaints.filter(c => c.assignedTo === currentUser.username);
+  return complaints;
+}
+
+function renderComplaints() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const status = document.getElementById('filterStatus').value;
+  const category = document.getElementById('filterCategory').value;
+  const priority = document.getElementById('filterPriority').value;
+
+  let list = getVisibleComplaints(currentUser.role === 'admin');
+  if (search) list = list.filter(c => c.title.toLowerCase().includes(search) || c.description.toLowerCase().includes(search) || c.id.toLowerCase().includes(search));
+  if (status) list = list.filter(c => c.status === status);
+  if (category) list = list.filter(c => c.category === category);
+  if (priority) list = list.filter(c => c.priority === priority);
+
+  // Sort: high priority pending first
+  list.sort((a, b) => {
+    const prioOrder = { high: 0, medium: 1, low: 2 };
+    const statusOrder = { pending: 0, 'in-progress': 1, resolved: 2, rejected: 3 };
+    if (statusOrder[a.status] !== statusOrder[b.status]) return statusOrder[a.status] - statusOrder[b.status];
+    if (prioOrder[a.priority] !== prioOrder[b.priority]) return prioOrder[a.priority] - prioOrder[b.priority];
+    return b.createdAt - a.createdAt;
+  });
+
+  document.getElementById('complaintsList').innerHTML = list.length ? list.map(renderComplaintCard).join('') : emptyState('No complaints match your filters');
+}
+
+function renderComplaintCard(c) {
+  const cat = CATEGORIES[c.category];
+  return `
+    <div class="complaint-card priority-${c.priority}" onclick="openDetail('${c.id}')">
+      <div class="cc-top">
+        <h3>${cat.icon} ${c.title}</h3>
+        <span class="cc-id">${c.id}</span>
+      </div>
+      <div class="cc-desc">${c.description}</div>
+      <div class="cc-meta">
+        <span class="badge badge-${c.status}">${statusLabel(c.status)}</span>
+        <span class="badge badge-category">${cat.label}</span>
+        <span class="badge badge-priority-${c.priority}">${c.priority.toUpperCase()}</span>
+        <span style="color:var(--text-light);">🏠 Room ${c.room} · Block ${c.block}</span>
+        <span style="color:var(--text-light);">🕒 ${timeAgo(c.createdAt)}</span>
+        <button class="upvote-btn ${c.upvotedBy.includes(currentUser.username) ? 'active' : ''}" onclick="event.stopPropagation(); toggleUpvote('${c.id}')">👍 ${c.upvotes}</button>
+        ${c.rating > 0 ? `<span style="color:var(--warning);">⭐ ${c.rating}/5</span>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function statusLabel(s) {
+  return { pending: '⏳ Pending', 'in-progress': '🔧 In Progress', resolved: '✅ Resolved', rejected: '❌ Rejected' }[s] || s;
+}
+
+function emptyState(msg) {
+  return `<div class="empty-state"><div class="empty-icon">📭</div><h3>${msg}</h3><p>Try adjusting your filters or submit a new complaint.</p></div>`;
+}
+
+// =================== COMPLAINT DETAIL ===================
+function openDetail(id) {
+  const c = complaints.find(x => x.id === id);
+  if (!c) return;
+  const cat = CATEGORIES[c.category];
+  document.getElementById('modalTitle').textContent = c.id + ' — ' + c.title;
+
+  let html = `
+    <div class="detail-grid">
+      <div class="detail-item"><div class="label">Category</div>${cat.icon} ${cat.label}</div>
+      <div class="detail-item"><div class="label">Priority</div><span class="badge badge-priority-${c.priority}">${c.priority.toUpperCase()}</span></div>
+      <div class="detail-item"><div class="label">Status</div><span class="badge badge-${c.status}">${statusLabel(c.status)}</span></div>
+      <div class="detail-item"><div class="label">Location</div>🏠 Room ${c.room}, Block ${c.block}</div>
+      <div class="detail-item"><div class="label">Submitted By</div>${USERS[c.submittedBy]?.name || c.submittedBy}</div>
+      <div class="detail-item"><div class="label">Assigned To</div>${c.assignedTo ? (USERS[c.assignedTo]?.name || c.assignedTo) : '<em>Unassigned</em>'}</div>
+      <div class="detail-item"><div class="label">Upvotes</div>👍 ${c.upvotes}</div>
+      <div class="detail-item"><div class="label">Filed On</div>${new Date(c.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+    </div>
+    <div class="detail-desc">${c.description}</div>
+    <h3 style="margin-bottom:10px;">📜 Timeline</h3>
+    <div class="timeline">
+      ${c.timeline.map(t => `<div class="timeline-item"><div class="tl-text">${t.status}</div><div class="tl-time">${formatTime(t.time)} · by ${USERS[t.by]?.name || t.by}</div></div>`).join('')}
+    </div>
+  `;
+
+  // Chat
+  html += `
+    <div class="chat-section">
+      <h3>💬 Messages</h3>
+      <div class="chat-messages" id="chatMessages">
+        ${c.messages.length ? c.messages.map(m => `
+          <div class="chat-msg ${m.from === currentUser.username ? 'self' : 'other'}">
+            <div class="msg-author">${m.name} (${m.role})</div>
+            ${m.text}
+            <div class="msg-time">${formatTime(m.time)}</div>
+          </div>
+        `).join('') : '<div style="text-align:center; color:var(--text-light); padding:20px;">No messages yet</div>'}
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMessage('${c.id}')">
+        <button class="btn btn-primary btn-sm" onclick="sendMessage('${c.id}')">Send</button>
+      </div>
+    </div>
+  `;
+
+  // Admin actions
+  if (currentUser.role === 'admin') {
+    html += `
+      <div class="admin-actions">
+        <strong>Admin Actions:</strong>
+        <select id="adminStatusSelect">
+          <option value="">Change Status...</option>
+          <option value="pending" ${c.status==='pending'?'selected':''}>Pending</option>
+          <option value="in-progress" ${c.status==='in-progress'?'selected':''}>In Progress</option>
+          <option value="resolved" ${c.status==='resolved'?'selected':''}>Resolved</option>
+          <option value="rejected" ${c.status==='rejected'?'selected':''}>Rejected</option>
+        </select>
+        <button class="btn btn-info btn-sm" onclick="changeStatus('${c.id}')">Update Status</button>
+        <select id="adminAssignSelect">
+          <option value="">Assign to...</option>
+          <option value="staff">🔧 Ramesh Yadav (Staff)</option>
+        </select>
+        <button class="btn btn-success btn-sm" onclick="assignStaff('${c.id}')">Assign</button>
+      </div>
+    `;
+  }
+
+  // Staff quick-update
+  if (currentUser.role === 'staff' && (c.status === 'in-progress' || c.status === 'pending')) {
+    html += `
+      <div class="admin-actions">
+        <strong>Staff Actions:</strong>
+        <button class="btn btn-success btn-sm" onclick="staffResolve('${c.id}')">✅ Mark as Resolved</button>
+      </div>
+    `;
+  }
+
+  // Student rating
+  if (currentUser.role === 'student' && c.status === 'resolved' && c.submittedBy === currentUser.username && c.rating === 0) {
+    html += `
+      <div class="rating-section">
+        <strong>⭐ Rate the Resolution</strong>
+        <div class="stars" id="starsContainer">
+          ${[1,2,3,4,5].map(i => `<span onclick="rateComplaint('${c.id}', ${i})" onmouseenter="highlightStars(${i})" onmouseleave="resetStars('${c.id}')">${'☆'}</span>`).join('')}
+        </div>
+      </div>
+    `;
+  } else if (c.rating > 0) {
+    html += `<div class="rating-section"><strong>⭐ Rating: ${'★'.repeat(c.rating)}${'☆'.repeat(5-c.rating)} (${c.rating}/5)</strong></div>`;
+  }
+
+  // Student reopen
+  if (currentUser.role === 'student' && c.status === 'resolved' && c.submittedBy === currentUser.username) {
+    html += `<div class="admin-actions"><button class="btn btn-warning btn-sm" onclick="reopenComplaint('${c.id}')">🔄 Reopen Complaint</button></div>`;
+  }
+
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('detailModal').classList.add('show');
+
+  // Scroll chat to bottom
+  setTimeout(() => {
+    const chatEl = document.getElementById('chatMessages');
+    if (chatEl) chatEl.scrollTop = chatEl.scrollHeight;
+  }, 100);
+}
+
+function closeModal() {
+  document.getElementById('detailModal').classList.remove('show');
+}
+document.getElementById('detailModal').addEventListener('click', e => { if (e.target === document.getElementById('detailModal')) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// =================== ACTIONS ===================
+function submitComplaint() {
+  const title = document.getElementById('ncTitle').value.trim();
+  const desc = document.getElementById('ncDesc').value.trim();
+  const category = document.getElementById('ncCategory').value;
+  const priority = document.getElementById('ncPriority').value;
+  const room = document.getElementById('ncRoom').value.trim() || '-';
+  const block = document.getElementById('ncBlock').value;
+
+  if (!title || !desc) { showToast('Please fill in title and description!', 'error'); return; }
+
+  const id = 'HC-' + (++complaintIdCounter);
+  const now = Date.now();
+  complaints.push({
+    id, title, description: desc, category, priority, status: 'pending',
+    room, block, submittedBy: currentUser.username, assignedTo: null,
+    upvotes: 0, upvotedBy: [], rating: 0,
+    timeline: [{ status: 'Submitted', time: now, by: currentUser.username }],
+    messages: [], createdAt: now
+  });
+
+  addNotification(`📋 New complaint filed: "${title}" [${priority.toUpperCase()}]`, 'admin');
+  showToast('Complaint submitted successfully! ID: ' + id, 'success');
+
+  document.getElementById('ncTitle').value = '';
+  document.getElementById('ncDesc').value = '';
+  document.getElementById('ncRoom').value = '';
+  switchTab('complaints');
+}
+
+function changeStatus(id) {
+  const c = complaints.find(x => x.id === id);
+  const newStatus = document.getElementById('adminStatusSelect').value;
+  if (!newStatus || newStatus === c.status) return;
+  c.status = newStatus;
+  c.timeline.push({ status: statusLabel(newStatus).replace(/[^\w\s]/g, '').trim(), time: Date.now(), by: currentUser.username });
+  addNotification(`🔄 Complaint "${c.title}" status changed to ${statusLabel(newStatus)}`, c.submittedBy);
+  if (c.assignedTo) addNotification(`🔄 Complaint "${c.title}" status changed to ${statusLabel(newStatus)}`, c.assignedTo);
+  showToast('Status updated!', 'success');
+  openDetail(id);
+}
+
+function assignStaff(id) {
+  const c = complaints.find(x => x.id === id);
+  const staff = document.getElementById('adminAssignSelect').value;
+  if (!staff) return;
+  c.assignedTo = staff;
+  if (c.status === 'pending') c.status = 'in-progress';
+  c.timeline.push({ status: 'Assigned to ' + (USERS[staff]?.name || staff), time: Date.now(), by: currentUser.username });
+  addNotification(`📋 You have been assigned: "${c.title}"`, staff);
+  addNotification(`🔧 Your complaint "${c.title}" has been assigned to ${USERS[staff]?.name || staff}`, c.submittedBy);
+  showToast('Staff assigned!', 'success');
+  openDetail(id);
+}
+
+function staffResolve(id) {
+  const c = complaints.find(x => x.id === id);
+  c.status = 'resolved';
+  c.timeline.push({ status: 'Resolved', time: Date.now(), by: currentUser.username });
+  addNotification(`✅ Your complaint "${c.title}" has been resolved!`, c.submittedBy);
+  showToast('Marked as resolved!', 'success');
+  openDetail(id);
+}
+
+function reopenComplaint(id) {
+  const c = complaints.find(x => x.id === id);
+  c.status = 'in-progress';
+  c.rating = 0;
+  c.timeline.push({ status: 'Reopened by student', time: Date.now(), by: currentUser.username });
+  addNotification(`🔄 Complaint "${c.title}" has been reopened by the student`, 'admin');
+  if (c.assignedTo) addNotification(`🔄 Complaint "${c.title}" has been reopened`, c.assignedTo);
+  showToast('Complaint reopened!', 'info');
+  openDetail(id);
+}
+
+function sendMessage(id) {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const c = complaints.find(x => x.id === id);
+  c.messages.push({ from: currentUser.username, role: currentUser.role, name: currentUser.name, text, time: Date.now() });
+
+  // Notify other party
+  if (currentUser.role === 'student') {
+    if (c.assignedTo) addNotification(`💬 New message on "${c.title}" from ${currentUser.name}`, c.assignedTo);
+    addNotification(`💬 New message on "${c.title}" from ${currentUser.name}`, 'admin');
+  } else {
+    addNotification(`💬 New message on "${c.title}" from ${currentUser.name}`, c.submittedBy);
+  }
+
+  input.value = '';
+  openDetail(id);
+}
+
+function toggleUpvote(id) {
+  const c = complaints.find(x => x.id === id);
+  const idx = c.upvotedBy.indexOf(currentUser.username);
+  if (idx > -1) { c.upvotedBy.splice(idx, 1); c.upvotes--; }
+  else { c.upvotedBy.push(currentUser.username); c.upvotes++; }
+  renderComplaints();
+  renderDashboard();
+}
+
+function rateComplaint(id, rating) {
+  const c = complaints.find(x => x.id === id);
+  c.rating = rating;
+  addNotification(`⭐ Student rated "${c.title}" ${rating}/5 stars`, 'admin');
+  if (c.assignedTo) addNotification(`⭐ Student rated "${c.title}" ${rating}/5 stars`, c.assignedTo);
+  showToast(`Rated ${rating}/5 stars!`, 'success');
+  openDetail(id);
+}
+
+function highlightStars(n) {
+  const container = document.getElementById('starsContainer');
+  if (!container) return;
+  const spans = container.querySelectorAll('span');
+  spans.forEach((s, i) => s.textContent = i < n ? '★' : '☆');
+}
+
+function resetStars(id) {
+  const c = complaints.find(x => x.id === id);
+  const container = document.getElementById('starsContainer');
+  if (!container) return;
+  const spans = container.querySelectorAll('span');
+  spans.forEach((s, i) => s.textContent = i < c.rating ? '★' : '☆');
+}
+
+// =================== NOTIFICATIONS ===================
+function addNotification(text, forUser) {
+  notifications.unshift({ text, time: Date.now(), forUser, read: false });
+  updateNotifUI();
+}
+
+function toggleNotif() {
+  const dd = document.getElementById('notifDropdown');
+  dd.classList.toggle('show');
+  if (dd.classList.contains('show')) {
+    // Mark as read
+    notifications.forEach(n => { if (n.forUser === currentUser.username) n.read = true; });
+    updateNotifUI();
+  }
+}
+
+function updateNotifUI() {
+  if (!currentUser) return;
+  const myNotifs = notifications.filter(n => n.forUser === currentUser.username);
+  const unread = myNotifs.filter(n => !n.read).length;
+  const badge = document.getElementById('notifBadge');
+  badge.textContent = unread;
+  badge.classList.toggle('hidden', unread === 0);
+
+  const list = document.getElementById('notifList');
+  if (myNotifs.length === 0) {
+    list.innerHTML = '<div class="notif-empty">No notifications</div>';
+  } else {
+    list.innerHTML = myNotifs.slice(0, 20).map(n => `
+      <div class="notif-item ${n.read ? '' : 'unread'}">
+        ${n.text}
+        <div class="notif-time">${timeAgo(n.time)}</div>
+      </div>
+    `).join('');
+  }
+}
+
+// Close notif dropdown when clicking elsewhere
+document.addEventListener('click', e => {
+  if (!e.target.closest('.notif-wrapper')) {
+    document.getElementById('notifDropdown').classList.remove('show');
+  }
+});
+
+// =================== ANALYTICS ===================
+function renderAnalytics() {
+  const all = complaints;
+  const total = all.length;
+
+  // Category counts
+  const catCounts = {};
+  Object.keys(CATEGORIES).forEach(k => catCounts[k] = 0);
+  all.forEach(c => catCounts[c.category]++);
+  const maxCat = Math.max(...Object.values(catCounts), 1);
+
+  // Status counts
+  const statusCounts = { pending: 0, 'in-progress': 0, resolved: 0, rejected: 0 };
+  all.forEach(c => statusCounts[c.status]++);
+  const maxStatus = Math.max(...Object.values(statusCounts), 1);
+
+  // Resolution rate
+  const resRate = total ? Math.round((statusCounts.resolved / total) * 100) : 0;
+
+  // Avg satisfaction
+  const rated = all.filter(c => c.rating > 0);
+  const avgSat = rated.length ? (rated.reduce((s, c) => s + c.rating, 0) / rated.length).toFixed(1) : 'N/A';
+
+  // Trending
+  const trending = [...all].sort((a, b) => b.upvotes - a.upvotes).slice(0, 5);
+
+  const catColors = { cleaning: 'green', electrical: 'yellow', plumbing: 'blue', wifi: 'purple', food: 'red', other: 'indigo' };
+  const statusColors = { pending: 'yellow', 'in-progress': 'blue', resolved: 'green', rejected: 'red' };
+
+  document.getElementById('analyticsGrid').innerHTML = `
+    <div class="chart-card">
+      <h3>📂 Complaints by Category</h3>
+      <div class="bar-chart">
+        ${Object.entries(catCounts).map(([k, v]) => `
+          <div class="bar-row">
+            <span class="bar-label">${CATEGORIES[k].icon} ${CATEGORIES[k].label}</span>
+            <div class="bar-track"><div class="bar-fill ${catColors[k]}" style="width:${(v/maxCat)*100}%">${v > 0 ? v : ''}</div></div>
+            <span class="bar-count">${v}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>📊 Complaints by Status</h3>
+      <div class="bar-chart">
+        ${Object.entries(statusCounts).map(([k, v]) => `
+          <div class="bar-row">
+            <span class="bar-label">${statusLabel(k)}</span>
+            <div class="bar-track"><div class="bar-fill ${statusColors[k]}" style="width:${(v/maxStatus)*100}%">${v > 0 ? v : ''}</div></div>
+            <span class="bar-count">${v}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>📈 Key Metrics</h3>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div class="metric-big"><div class="number">${resRate}%</div><div class="label">Resolution Rate</div></div>
+        <div class="metric-big"><div class="number">${avgSat}</div><div class="label">Avg Satisfaction</div></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>🔥 Trending Issues (Most Upvoted)</h3>
+      <div class="trending-list">
+        ${trending.map((c, i) => `
+          <div class="trending-item" style="cursor:pointer" onclick="openDetail('${c.id}')">
+            <div class="trending-rank">#${i + 1}</div>
+            <div class="trending-info"><strong>${c.title}</strong>${c.id} · ${CATEGORIES[c.category].label}</div>
+            <div class="trending-votes">👍 ${c.upvotes}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// =================== UTILITIES ===================
+function timeAgo(ts) {
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return mins + 'm ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  const days = Math.floor(hrs / 24);
+  return days + 'd ago';
+}
+
+function formatTime(ts) {
+  return new Date(ts).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  container.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+// =================== INIT ===================
+initSampleData();
+</script>
+</body>
+</html>
